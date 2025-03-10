@@ -5,6 +5,7 @@ on:
     branches:
       - main
       - debug       # 新增 debug 分支触发
+      - stable-dev
     tags:
       - 'v*'       
   workflow_dispatch: 
@@ -34,6 +35,8 @@ jobs:
             echo "tags=${{ secrets.DOCKERHUB_USERNAME }}/maimbot:main,${{ secrets.DOCKERHUB_USERNAME }}/maimbot:latest" >> $GITHUB_OUTPUT
           elif [ "${{ github.ref }}" == "refs/heads/debug" ]; then
             echo "tags=${{ secrets.DOCKERHUB_USERNAME }}/maimbot:debug" >> $GITHUB_OUTPUT
+          elif [ "${{ github.ref }}" == "refs/heads/stable-dev" ]; then
+            echo "tags=${{ secrets.DOCKERHUB_USERNAME }}/maimbot:stable-dev" >> $GITHUB_OUTPUT
           fi
 
       - name: Build and Push Docker Image

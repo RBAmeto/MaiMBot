@@ -52,12 +52,12 @@ key = "SILICONFLOW_KEY"            # 用同一张门票就可以啦
 如果你想用DeepSeek官方的服务，就要这样改：
 ```toml
 [model.llm_reasoning]
-name = "Pro/deepseek-ai/DeepSeek-R1"
+name = "deepseek-reasoner"       # 改成对应的模型名称，这里为DeepseekR1
 base_url = "DEEP_SEEK_BASE_URL"  # 改成去DeepSeek游乐园
 key = "DEEP_SEEK_KEY"            # 用DeepSeek的门票
 
 [model.llm_normal]
-name = "Pro/deepseek-ai/DeepSeek-V3"
+name = "deepseek-chat"           # 改成对应的模型名称，这里为DeepseekV3
 base_url = "DEEP_SEEK_BASE_URL"  # 也去DeepSeek游乐园
 key = "DEEP_SEEK_KEY"            # 用同一张DeepSeek门票
 ```

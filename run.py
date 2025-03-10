@@ -107,6 +107,8 @@ def install_napcat():
     napcat_filename = input(
         "下载完成后请把文件复制到此文件夹，并将**不包含后缀的文件名**输入至此窗口，如 NapCat.32793.Shell："
     )
+    if(napcat_filename[-4:] == ".zip"):
+        napcat_filename = napcat_filename[:-4]
     extract_files(napcat_filename + ".zip", "napcat")
     print("NapCat 安装完成")
     os.remove(napcat_filename + ".zip")
