@@ -48,7 +48,7 @@ logger.debug(f"正在唤醒{global_config.BOT_NICKNAME}......")
 # 创建机器人实例
 chat_bot = ChatBot()
 # 注册群消息处理器
-group_msg = on_message(priority=5)
+group_msg = on_message(priority=999)
 # 创建定时任务
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 

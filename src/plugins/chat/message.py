@@ -54,7 +54,7 @@ class Message:
 
         # 异步获取补充信息
         self.group_name = self.group_name or get_groupname(self.group_id)
-        self.user_nickname = self.user_nickname or get_user_nickname(self.user_id)
+        self.user_nickname = self.user_cardname or get_user_cardname(self.user_id) or self.user_nickname or get_user_nickname(self.user_id)
         self.user_cardname = self.user_cardname or get_user_cardname(self.user_id)
 
         # 消息解析

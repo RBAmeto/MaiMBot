@@ -14,7 +14,8 @@ class WillingManager:
         while True:
             await asyncio.sleep(5)
             for group_id in self.group_reply_willing:
-                self.group_reply_willing[group_id] = max(0, self.group_reply_willing[group_id] * 0.6)
+                if self.group_reply_willing[group_id] > 0.51:
+                    self.group_reply_willing[group_id] = max(0, self.group_reply_willing[group_id] * 0.6)
                 
     def get_willing(self, group_id: int) -> float:
         """获取指定群组的回复意愿"""
@@ -35,10 +36,9 @@ class WillingManager:
         elif is_mentioned_bot:
             current_willing += 0.05
             logger.info(f"被重复提及, 当前意愿: {current_willing}")
-        
-        if is_emoji:
-            current_willing *= 0.1
-            logger.info(f"表情包, 当前意愿: {current_willing}")
+        if current_willing < 0.5:
+            current_willing += 0.01
+
         
         logger.debug(f"放大系数_interested_rate: {global_config.response_interested_rate_amplifier}")
         interested_rate *= global_config.response_interested_rate_amplifier #放大回复兴趣度
@@ -50,6 +50,9 @@ class WillingManager:
         # print(f"放大系数_willing: {global_config.response_willing_amplifier}, 当前意愿: {current_willing}")
         
         reply_probability = max((current_willing - 0.45) * 2, 0)
+        if is_emoji:
+            reply_probabilityg *= 0.1
+            # logger.info(f"表情包, 当前意愿: {current_willing}")
         if group_id not in config.talk_allowed_groups:
             current_willing = 0
             reply_probability = 0
