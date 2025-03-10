@@ -179,7 +179,7 @@ class MessageManager:
                                                             reply_message_id=message_earliest.reply_message_id)
                 # else:
                 # await message_sender.send_group_message(group_id, message_earliest.processed_plain_text,
-                                                            auto_escape=False)
+                                                            # auto_escape=False)
                 # 移除消息
                 if message_earliest.is_emoji:
                     message_earliest.processed_plain_text = "[表情包]"
