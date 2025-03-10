@@ -51,7 +51,7 @@ class WillingManager:
         
         reply_probability = max((current_willing - 0.45) * 2, 0)
         if is_emoji:
-            reply_probabilityg *= 0.1
+            reply_probability *= 0.1
             # logger.info(f"表情包, 当前意愿: {current_willing}")
         if group_id not in config.talk_allowed_groups:
             current_willing = 0
