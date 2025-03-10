@@ -30,8 +30,8 @@ class WillingManager:
         current_willing = self.group_reply_willing.get(group_id, 0)
         
         # print(f"初始意愿: {current_willing}")
-        if is_mentioned_bot and current_willing < 1.0:
-            current_willing += 0.9
+        if is_mentioned_bot and current_willing < 0.8:
+            current_willing += 0.7
             logger.info(f"被提及, 当前意愿: {current_willing}")
         elif is_mentioned_bot:
             current_willing += 0.05
