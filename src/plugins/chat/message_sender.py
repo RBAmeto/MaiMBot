@@ -49,9 +49,9 @@ class Message_Sender:
         #     message = at_cq + " " + message
 
         typing_time = calculate_typing_time(message)
-        if typing_time > 10:
-            typing_time = 10
-        # await asyncio.sleep(typing_time)
+        if typing_time > 4:
+            typing_time = 4
+        await asyncio.sleep(typing_time)
 
         # 发送消息
         try:
