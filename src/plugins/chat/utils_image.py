@@ -43,15 +43,8 @@ def storage_compress_image(base64_data: str, max_size: int = 200) -> str:
         images_dir = "data/images"
         os.makedirs(images_dir, exist_ok=True)
         
-        # # 连接数据库
-        # db = Database(
-        #     host=config.mongodb_host,
-        #     port=int(config.mongodb_port),
-        #     db_name=config.database_name,
-        #     username=config.mongodb_username,
-        #     password=config.mongodb_password,
-        #     auth_source=config.mongodb_auth_source
-        # )
+        # 连接数据库
+        db = Database.get_instance()
         
         # 检查是否已存在相同哈希值的图片
         collection = db.db['images']

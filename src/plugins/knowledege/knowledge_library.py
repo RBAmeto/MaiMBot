@@ -19,12 +19,13 @@ from src.common.database import Database
 
 # 从环境变量获取配置
 Database.initialize(
+    uri=os.getenv("MONGODB_URI"),
     host=os.getenv("MONGODB_HOST", "127.0.0.1"),
     port=int(os.getenv("MONGODB_PORT", "27017")),
-    db_name=os.getenv("DATABASE_NAME", "maimai"),
+    db_name=os.getenv("DATABASE_NAME", "MegBot"),
     username=os.getenv("MONGODB_USERNAME"),
     password=os.getenv("MONGODB_PASSWORD"),
-    auth_source=os.getenv("MONGODB_AUTH_SOURCE", "admin")
+    auth_source=os.getenv("MONGODB_AUTH_SOURCE"),
 )
 
 class KnowledgeLibrary:
@@ -79,7 +80,7 @@ class KnowledgeLibrary:
                 content = f.read()
                 
             # 按1024字符分段
-            segments = [content[i:i+600] for i in range(0, len(content), 600)]
+            segments = [content[i:i+600] for i in range(0, len(content), 300)]
             
             # 处理每个分段
             for segment in segments:
