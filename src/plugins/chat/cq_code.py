@@ -164,15 +164,20 @@ class CQCode:
     async def translate_emoji(self) -> str:
         """处理表情包类型的CQ码"""
         if 'url' not in self.params:
-            return '[表情包]'
+            return '[图片]'
         base64_str = self.get_img()
         if base64_str:
             # 将 base64 字符串转换为字节类型
             image_bytes = base64.b64decode(base64_str)
-            storage_emoji(image_bytes)
-            return await self.get_emoji_description(base64_str)
+            emoji_sta = storage_emoji(image_bytes)
+            if emoji_sta == 'not save':
+                return '[图片]'
+            elif emoji_sta == 'saved':
+                return '[表情包]'
+            else:
+                return emoji_sta
         else:
-            return '[表情包]'
+            return '[图片]'
 
     async def translate_image(self) -> str:
         """处理图片类型的CQ码，区分普通图片和表情包"""

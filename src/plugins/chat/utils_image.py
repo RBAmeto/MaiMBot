@@ -14,7 +14,14 @@ from ..chat.config import global_config
 driver = get_driver()
 config = driver.config
 
-
+db = Database(
+    host=config.mongodb_host,
+    port=int(config.mongodb_port),
+    db_name=config.database_name,
+    username=config.mongodb_username,
+    password=config.mongodb_password,
+    auth_source=config.mongodb_auth_source
+)
 
 def storage_compress_image(base64_data: str, max_size: int = 200) -> str:
     """
@@ -36,15 +43,15 @@ def storage_compress_image(base64_data: str, max_size: int = 200) -> str:
         images_dir = "data/images"
         os.makedirs(images_dir, exist_ok=True)
         
-        # 连接数据库
-        db = Database(
-            host=config.mongodb_host,
-            port=int(config.mongodb_port),
-            db_name=config.database_name,
-            username=config.mongodb_username,
-            password=config.mongodb_password,
-            auth_source=config.mongodb_auth_source
-        )
+        # # 连接数据库
+        # db = Database(
+        #     host=config.mongodb_host,
+        #     port=int(config.mongodb_port),
+        #     db_name=config.database_name,
+        #     username=config.mongodb_username,
+        #     password=config.mongodb_password,
+        #     auth_source=config.mongodb_auth_source
+        # )
         
         # 检查是否已存在相同哈希值的图片
         collection = db.db['images']
@@ -146,37 +153,62 @@ def storage_emoji(image_data: bytes) -> bytes:
         bytes: 原始图片数据
     """
     if not global_config.EMOJI_SAVE:
-        return image_data
+        return "not save"
     try:
         # 使用 CRC32 计算哈希值
         hash_value = format(zlib.crc32(image_data) & 0xFFFFFFFF, 'x')
         
-        # 确保表情包目录存在
-        emoji_dir = "data/emoji"
-        os.makedirs(emoji_dir, exist_ok=True)
+        if 'pic' not in db.db.list_collection_names():
+            db.db.create_collection('pic')
+            db.db.pic.create_index([('hash', 1)], unique=True)
+            db.db.pic.create_index([('filename', 1)])
+            db.db.pic.create_index([('count')])
         
-        # 检查是否已存在相同哈希值的文件
-        for filename in os.listdir(emoji_dir):
-            if hash_value in filename:
-                # print(f"\033[1;33m[提示]\033[0m 发现重复表情包: {filename}")
-                return image_data
-        
-        # 生成文件名
-        timestamp = int(time.time())
-        filename = f"{timestamp}_{hash_value}.jpg"
-        emoji_path = os.path.join(emoji_dir, filename)
-        
-        # 直接保存原始文件
-        with open(emoji_path, "wb") as f:
-            f.write(image_data)
+        exist_pic = db.db.pic.find_one({'hash': hash_value})
+        if not exist_pic:
+            # 生成文件名
+            timestamp = int(time.time())
+            filen = f"{timestamp}_{hash_value}.jpg"
+            pic_record={
+                'hash':hash_value,
+                'filename':filen,
+                'count':1
+            }
+            db.db.pic.insert_one(pic_record)
+            return "not save"
+        print(f"这张图出现{exist_pic['count']}次了")
+        pic_cnt = exist_pic['count'] + 1
+
+        db.db.pic.update_one({'hash': hash_value},{ "$set": { 'count': pic_cnt } })
+        if pic_cnt >= 3:
+            # 确保表情包目录存在
+            emoji_dir = "data/emoji"
+            os.makedirs(emoji_dir, exist_ok=True)
             
-        print(f"\033[1;32m[成功]\033[0m 保存表情包到: {emoji_path}")
-        return image_data
-        
+            # 检查是否已存在相同哈希值的文件
+            for filename in os.listdir(emoji_dir):
+                if hash_value in filename:
+                    # print(f"\033[1;33m[提示]\033[0m 发现重复表情包: {filename}")
+                    exist_emoji = db.db.emoji.find_one({'filename': filename})
+                    if exist_emoji:
+                        return exist_emoji['discription']
+                    else:
+                        return "saved"
+            
+            filesvname = exist_pic['filename']
+            emoji_path = os.path.join(emoji_dir, filesvname)
+            
+            # 直接保存原始文件
+            with open(emoji_path, "wb") as f:
+                f.write(image_data)
+                
+            print(f"\033[1;32m[成功]\033[0m 保存表情包到: {emoji_path}")
+            return "saved"
+        else:
+            print(f"\033[1;32m[跳过]\033[0m 当前表情使用次数{exist_pic['count']}次")
     except Exception as e:
         print(f"\033[1;31m[错误]\033[0m 保存表情包失败: {str(e)}")
-        return image_data 
-    
+        return "not save"
 
 def storage_image(image_data: bytes) -> bytes:
     """
