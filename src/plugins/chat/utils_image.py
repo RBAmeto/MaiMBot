@@ -180,6 +180,9 @@ def storage_emoji(image_data: bytes) -> bytes:
         pic_cnt = exist_pic['count'] + 1
 
         db.db.pic.update_one({'hash': hash_value},{ "$set": { 'count': pic_cnt } })
+        # 确保表情包目录存在
+        emoji_dir = "data/emoji"
+        os.makedirs(emoji_dir, exist_ok=True)
         # 检查是否已存在相同哈希值的文件
         for filename in os.listdir(emoji_dir):
             if hash_value in filename:
@@ -188,9 +191,7 @@ def storage_emoji(image_data: bytes) -> bytes:
                 if exist_emoji:
                     return exist_emoji['discription']
                 elif pic_cnt >= 4:
-                    # 确保表情包目录存在
-                    emoji_dir = "data/emoji"
-                    os.makedirs(emoji_dir, exist_ok=True)
+                    
                     filesvname = exist_pic['filename']
                     emoji_path = os.path.join(emoji_dir, filesvname)
                     
