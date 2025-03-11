@@ -181,7 +181,7 @@ def storage_emoji(image_data: bytes) -> bytes:
             if hash_value in filename:
                 # print(f"\033[1;33m[提示]\033[0m 发现重复表情包: {filename}")
                 exist_emoji = db.db.emoji.find_one({'filename': filename})
-                if exist_emoji:
+                if exist_emoji and 'discription' in exist_emoji:
                     if exist_emoji['discription']:
                         return exist_emoji['discription']
         if pic_cnt >= 4:
