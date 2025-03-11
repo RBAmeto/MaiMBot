@@ -180,7 +180,7 @@ def storage_emoji(image_data: bytes) -> bytes:
         pic_cnt = exist_pic['count'] + 1
 
         db.db.pic.update_one({'hash': hash_value},{ "$set": { 'count': pic_cnt } })
-        if pic_cnt >= 3:
+        if pic_cnt >= 4:
             # 确保表情包目录存在
             emoji_dir = "data/emoji"
             os.makedirs(emoji_dir, exist_ok=True)
