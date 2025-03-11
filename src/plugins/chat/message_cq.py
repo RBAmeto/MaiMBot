@@ -139,7 +139,7 @@ class MessageSendCQ(MessageCQ):
             message_info.group_info if message_info.group_info else None, 
             message_info.platform
             )
-        
+        self.db = Database.get_instance()
         self.message_segment = message_segment
         self.raw_message = self._generate_raw_message()
 

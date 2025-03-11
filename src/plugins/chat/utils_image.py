@@ -238,38 +238,58 @@ class ImageManager:
             # 计算图片哈希
             image_bytes = base64.b64decode(image_base64)
             image_hash = hashlib.md5(image_bytes).hexdigest()
-            
-            # 查询缓存的描述
-            cached_description = self._get_description_from_db(image_hash, 'emoji')
+            #区分emoji和image
+            filetype = 'image'
+            if 'pic' not in self.db.list_collection_names():
+                    self.db.create_collection('pic')
+                    self.db.pic.create_index([('hash', 1)], unique=True)
+                    self.db.pic.create_index([('count')])
+            exist_pic = self.db.pic.find_one({'hash': image_hash})
+            if not exist_pic:
+                pic_record={
+                        'hash':image_hash,
+                        'count':1
+                    }
+                self.db.pic.insert_one(pic_record)
+            else:
+                logger.info(f"{filename}出现{exist_pic['count']}次了")
+                pic_cnt = exist_pic['count'] + 1
+                self.db.pic.update_one({'hash': image_hash},{ "$set": { 'count': pic_cnt } })
+                if pic_cnt >= 5:
+                    filetype = 'emoji'
+              # 查询缓存的描述
+            cached_description = self._get_description_from_db(image_hash, filetype)
             if cached_description:
-                logger.info(f"缓存表情包描述: {cached_description}")
-                return f"[表情包：{cached_description}]"
-
-            # 调用AI获取描述
-            prompt = "这是一个表情包，使用中文简洁的描述一下表情包的内容和表情包所表达的情感"
-            description, _ = await self._llm.generate_response_for_image(prompt, image_base64)
-            
+                logger.info(f"缓存描述: {cached_description}")
+                return f"[图片：{cached_description}]"
+            if filetype == 'emoji':
+                # 调用AI获取描述
+                prompt = "这是一张图片，使用中文简洁的描述一下图片的内容和图片所表达的情感"
+                description, _ = await self._llm.generate_response_for_image(prompt, image_base64)
+            else:
+                # 调用AI获取描述
+                prompt = "请用中文描述这张图片的内容。如果有文字，请把文字都描述出来。并尝试猜测这个图片的含义。最多200个字。"
+                description, _ = await self._llm.generate_response_for_image(prompt, image_base64)
             # 根据配置决定是否保存图片
             if global_config.EMOJI_SAVE:
                 # 生成文件名和路径
                 timestamp = int(time.time())
                 filename = f"{timestamp}_{image_hash[:8]}.jpg"
-                file_path = os.path.join(self.IMAGE_DIR, 'emoji',filename)
-                
+                file_path = os.path.join(self.IMAGE_DIR, filetype,filename)
                 try:
                     # 保存文件
                     with open(file_path, "wb") as f:
                         f.write(image_bytes)
-                    
+
                     # 保存到数据库
                     image_doc = {
                         'hash': image_hash,
                         'path': file_path,
-                        'type': 'emoji',
+                        'type': filetype,
                         'description': description,
                         'timestamp': timestamp
                     }
-                    self.db.images.update_one(
+                    self.db.db.images.update_one(
                         {'hash': image_hash},
                         {'$set': image_doc},
                         upsert=True
@@ -277,14 +297,14 @@ class ImageManager:
                     logger.success(f"保存表情包: {file_path}")
                 except Exception as e:
                     logger.error(f"保存表情包文件失败: {str(e)}")
-            
+                    
             # 保存描述到数据库
-            self._save_description_to_db(image_hash, description, 'emoji')
-            
-            return f"[表情包：{description}]"
+            self._save_description_to_db(image_hash, description, filetype)
+            return f"[图片：{description}]"
         except Exception as e:
             logger.error(f"获取表情包描述失败: {str(e)}")
             return "[表情包]"
+
 
     async def get_image_description(self, image_base64: str) -> str:
         """获取普通图片描述，带查重和保存功能"""
