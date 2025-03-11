@@ -10,7 +10,6 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import networkx as nx
-import pymongo
 from dotenv import load_dotenv
 from loguru import logger
 import jieba

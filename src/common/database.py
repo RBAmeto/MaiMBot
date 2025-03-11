@@ -1,7 +1,6 @@
 from typing import Optional
-
 from pymongo import MongoClient
-
+from pymongo.database import Database as MongoDatabase
 
 class Database:
     _instance: Optional["Database"] = None
@@ -27,7 +26,7 @@ class Database:
         else:
             # 否则使用无认证连接
             self.client = MongoClient(host, port)
-        self.db = self.client[db_name]
+        self.db: MongoDatabase = self.client[db_name]
         
     @classmethod
     def initialize(
@@ -39,18 +38,18 @@ class Database:
         password: Optional[str] = None,
         auth_source: Optional[str] = None,
         uri: Optional[str] = None,
-    ) -> "Database":
+    ) -> MongoDatabase:
         if cls._instance is None:
             cls._instance = cls(
                 host, port, db_name, username, password, auth_source, uri
             )
-        return cls._instance
+        return cls._instance.db
         
     @classmethod
-    def get_instance(cls) -> "Database":
+    def get_instance(cls) -> MongoDatabase:
         if cls._instance is None:
             raise RuntimeError("Database not initialized")
-        return cls._instance
+        return cls._instance.db
 
 
     #测试用

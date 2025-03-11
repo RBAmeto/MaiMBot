@@ -17,7 +17,11 @@
 - MongoDB 提供数据持久化支持
 - NapCat 作为QQ协议端支持
 
-**最新版本: v0.5.***
+**最新版本: v0.5.13**
+> [!WARNING]
+> 注意，3月12日的v0.5.13, 该版本更新较大，建议单独开文件夹部署，然后转移/data文件 和数据库，数据库可能需要删除messages下的内容（不需要删除记忆）
+
+
 
 <div align="center">
 <a href="https://www.bilibili.com/video/BV1amAneGE3P" target="_blank">
@@ -40,7 +44,12 @@
 - [二群](https://qm.qq.com/q/RzmCiRtHEW) 571780722 （开发和建议相关讨论）不一定有空回复，会优先写文档和代码
 - [三群](https://qm.qq.com/q/wlH5eT8OmQ) 1035228475（开发和建议相关讨论）不一定有空回复，会优先写文档和代码
 
-**其他平台版本**
+
+
+**📚 有热心网友创作的wiki:** https://maimbot.pages.dev/
+
+
+**😊 其他平台版本** 
 
 - (由 [CabLate](https://github.com/cablate) 贡献) [Telegram 与其他平台(未来可能会有)的版本](https://github.com/cablate/MaiMBot/tree/telegram) - [集中讨论串](https://github.com/SengokuCola/MaiMBot/discussions/149)
 

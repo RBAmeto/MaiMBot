@@ -69,13 +69,14 @@ class Database:
     def __init__(self):
         if not Database.db:
             Database.initialize(
-                host=os.getenv("MONGODB_HOST"),
-                port=int(os.getenv("MONGODB_PORT")),
-                db_name=os.getenv("DATABASE_NAME"),
-                username=os.getenv("MONGODB_USERNAME"),
-                password=os.getenv("MONGODB_PASSWORD"),
-                auth_source=os.getenv("MONGODB_AUTH_SOURCE")
-            )
+                    uri=os.getenv("MONGODB_URI"),
+                    host=os.getenv("MONGODB_HOST", "127.0.0.1"),
+                    port=int(os.getenv("MONGODB_PORT", "27017")),
+                    db_name=os.getenv("DATABASE_NAME", "MegBot"),
+                    username=os.getenv("MONGODB_USERNAME"),
+                    password=os.getenv("MONGODB_PASSWORD"),
+                    auth_source=os.getenv("MONGODB_AUTH_SOURCE"),
+                )
             
     @classmethod
     def initialize(cls, host, port, db_name, username=None, password=None, auth_source="admin"):

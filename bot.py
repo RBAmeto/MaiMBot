@@ -5,7 +5,7 @@ import nonebot
 from dotenv import load_dotenv
 from loguru import logger
 from nonebot.adapters.onebot.v11 import Adapter as ONEBOT_V11Adapter
-
+from src.common.database import Database
 '''彩蛋'''
 from colorama import Fore, init
 
@@ -75,7 +75,15 @@ base_config = {
     "host": env_config.get("HOST", "0.0.0.0"),
     "log_level": "INFO",
 }
-
+Database.initialize(
+    uri=os.getenv("MONGODB_URI"),
+    host=os.getenv("MONGODB_HOST", "127.0.0.1"),
+    port=int(os.getenv("MONGODB_PORT", "27017")),
+    db_name=os.getenv("DATABASE_NAME", "MegBot"),
+    username=os.getenv("MONGODB_USERNAME"),
+    password=os.getenv("MONGODB_PASSWORD"),
+    auth_source=os.getenv("MONGODB_AUTH_SOURCE"),
+)
 # 合并配置
 nonebot.init(**base_config, **env_config)
 

@@ -1,4 +1,5 @@
 import os
+import sys
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
 
@@ -36,8 +37,7 @@ class BotConfig:
 
     ban_user_id = set()
 
-    build_memory_interval: int = 30  # 记忆构建间隔（秒）
-    forget_memory_interval: int = 300  # 记忆遗忘间隔（秒）
+    
     EMOJI_CHECK_INTERVAL: int = 120  # 表情包检查间隔（分钟）
     EMOJI_REGISTER_INTERVAL: int = 10  # 表情包注册间隔（分钟）
     EMOJI_SAVE: bool = True  # 偷表情包
@@ -67,6 +67,8 @@ class BotConfig:
 
     enable_advance_output: bool = False  # 是否启用高级输出
     enable_kuuki_read: bool = True  # 是否启用读空气功能
+    enable_debug_output: bool = False  # 是否启用调试输出
+    enable_friend_chat: bool = False  # 是否启用好友聊天
 
     mood_update_interval: float = 1.0  # 情绪更新间隔 单位秒
     mood_decay_rate: float = 0.95  # 情绪衰减率
@@ -92,7 +94,13 @@ class BotConfig:
     PERSONALITY_1: float = 0.6  # 第一种人格概率
     PERSONALITY_2: float = 0.3  # 第二种人格概率
     PERSONALITY_3: float = 0.1  # 第三种人格概率
-
+    
+    build_memory_interval: int = 600  # 记忆构建间隔（秒）
+    
+    forget_memory_interval: int = 600  # 记忆遗忘间隔（秒）
+    memory_forget_time: int = 24  # 记忆遗忘时间（小时）
+    memory_forget_percentage: float = 0.01  # 记忆遗忘比例
+    memory_compress_rate: float = 0.1  # 记忆压缩率
     memory_ban_words: list = field(
         default_factory=lambda: ["表情包", "图片", "回复", "聊天记录"]
     )  # 添加新的配置项默认值
@@ -291,6 +299,11 @@ class BotConfig:
             # 在版本 >= 0.0.4 时才处理新增的配置项
             if config.INNER_VERSION in SpecifierSet(">=0.0.4"):
                 config.memory_ban_words = set(memory_config.get("memory_ban_words", []))
+                
+            if config.INNER_VERSION in SpecifierSet(">=0.0.7"):
+                config.memory_forget_time = memory_config.get("memory_forget_time", config.memory_forget_time)
+                config.memory_forget_percentage = memory_config.get("memory_forget_percentage", config.memory_forget_percentage)
+                config.memory_compress_rate = memory_config.get("memory_compress_rate", config.memory_compress_rate)
 
         def mood(parent: dict):
             mood_config = parent["mood"]
@@ -325,6 +338,9 @@ class BotConfig:
             others_config = parent["others"]
             config.enable_advance_output = others_config.get("enable_advance_output", config.enable_advance_output)
             config.enable_kuuki_read = others_config.get("enable_kuuki_read", config.enable_kuuki_read)
+            if config.INNER_VERSION in SpecifierSet(">=0.0.7"):
+                config.enable_debug_output = others_config.get("enable_debug_output", config.enable_debug_output)
+                config.enable_friend_chat = others_config.get("enable_friend_chat", config.enable_friend_chat)
 
         # 版本表达式：>=1.0.0,<2.0.0
         # 允许字段：func: method, support: str, notice: str, necessary: bool
@@ -419,4 +435,8 @@ global_config = BotConfig.load_config(config_path=bot_config_path)
 
 if not global_config.enable_advance_output:
     logger.remove()
-    pass
+    
+# 调试输出功能
+if global_config.enable_debug_output:
+    logger.remove()
+    logger.add(sys.stdout, level="DEBUG")

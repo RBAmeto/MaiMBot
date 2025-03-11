@@ -3,6 +3,7 @@ import datetime
 import math
 import random
 import time
+import os
 
 import jieba
 import networkx as nx
@@ -238,7 +239,7 @@ class Hippocampus:
             time_info += f"是从 {earliest_str} 到 {latest_str} 的对话:\n"
 
         for msg in messages:
-            input_text += f"{msg['text']}\n"
+            input_text += f"{msg['detailed_plain_text']}\n"
 
         logger.debug(input_text)
 
@@ -302,7 +303,7 @@ class Hippocampus:
         return topic_num
 
     async def operation_build_memory(self, chat_size=20):
-        time_frequency = {'near': 3, 'mid': 8, 'far': 5}
+        time_frequency = {'near': 1, 'mid': 4, 'far': 4}
         memory_samples = self.get_memory_sample(chat_size, time_frequency)
         
         for i, messages in enumerate(memory_samples, 1):
@@ -314,7 +315,7 @@ class Hippocampus:
             bar = '█' * filled_length + '-' * (bar_length - filled_length)
             logger.debug(f"进度: [{bar}] {progress:.1f}% ({i}/{len(memory_samples)})")
 
-            compress_rate = 0.1
+            compress_rate = global_config.memory_compress_rate
             compressed_memory, similar_topics_dict = await self.memory_compress(messages, compress_rate)
             logger.info(f"压缩后记忆数量: {len(compressed_memory)}，似曾相识的话题: {len(similar_topics_dict)}")
             
@@ -522,9 +523,14 @@ class Hippocampus:
 
     async def operation_forget_topic(self, percentage=0.1):
         """随机选择图中一定比例的节点和边进行检查,根据时间条件决定是否遗忘"""
+        # 检查数据库是否为空
         all_nodes = list(self.memory_graph.G.nodes())
         all_edges = list(self.memory_graph.G.edges())
         
+        if not all_nodes and not all_edges:
+            logger.info("记忆图为空,无需进行遗忘操作")
+            return
+            
         check_nodes_count = max(1, int(len(all_nodes) * percentage))
         check_edges_count = max(1, int(len(all_edges) * percentage))
         
@@ -545,7 +551,7 @@ class Hippocampus:
             # print(f"float(last_modified):{float(last_modified)}"    )
             # print(f"current_time:{current_time}")
             # print(f"current_time - last_modified:{current_time - last_modified}")
-            if current_time - last_modified > 3600*24:  # test
+            if current_time - last_modified > 3600*global_config.memory_forget_time:  # test
                 current_strength = edge_data.get('strength', 1)
                 new_strength = current_strength - 1
                 
@@ -888,15 +894,6 @@ config = driver.config
 
 start_time = time.time()
 
-Database.initialize(
-    uri=config.MONGODB_URI,
-    host=config.MONGODB_HOST,
-    port=config.MONGODB_PORT,
-    db_name=config.DATABASE_NAME,
-    username=config.MONGODB_USERNAME,
-    password=config.MONGODB_PASSWORD,
-    auth_source=config.MONGODB_AUTH_SOURCE
-)
 # 创建记忆图
 memory_graph = Memory_graph()
 # 创建海马体
