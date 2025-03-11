@@ -180,32 +180,28 @@ def storage_emoji(image_data: bytes) -> bytes:
         pic_cnt = exist_pic['count'] + 1
 
         db.db.pic.update_one({'hash': hash_value},{ "$set": { 'count': pic_cnt } })
-        if pic_cnt >= 4:
-            # 确保表情包目录存在
-            emoji_dir = "data/emoji"
-            os.makedirs(emoji_dir, exist_ok=True)
-            
-            # 检查是否已存在相同哈希值的文件
-            for filename in os.listdir(emoji_dir):
-                if hash_value in filename:
-                    # print(f"\033[1;33m[提示]\033[0m 发现重复表情包: {filename}")
-                    exist_emoji = db.db.emoji.find_one({'filename': filename})
-                    if exist_emoji:
-                        return exist_emoji['discription']
-                    else:
-                        return "saved"
-            
-            filesvname = exist_pic['filename']
-            emoji_path = os.path.join(emoji_dir, filesvname)
-            
-            # 直接保存原始文件
-            with open(emoji_path, "wb") as f:
-                f.write(image_data)
-                
-            print(f"\033[1;32m[成功]\033[0m 保存表情包到: {emoji_path}")
-            return "saved"
-        else:
-            print(f"\033[1;32m[跳过]\033[0m 当前表情使用次数{exist_pic['count']}次")
+        # 检查是否已存在相同哈希值的文件
+        for filename in os.listdir(emoji_dir):
+            if hash_value in filename:
+                # print(f"\033[1;33m[提示]\033[0m 发现重复表情包: {filename}")
+                exist_emoji = db.db.emoji.find_one({'filename': filename})
+                if exist_emoji:
+                    return exist_emoji['discription']
+                elif pic_cnt >= 4:
+                    # 确保表情包目录存在
+                    emoji_dir = "data/emoji"
+                    os.makedirs(emoji_dir, exist_ok=True)
+                    filesvname = exist_pic['filename']
+                    emoji_path = os.path.join(emoji_dir, filesvname)
+                    
+                    # 直接保存原始文件
+                    with open(emoji_path, "wb") as f:
+                        f.write(image_data)
+                        
+                    print(f"\033[1;32m[成功]\033[0m 保存表情包到: {emoji_path}")
+                    return "saved"
+                else:
+                    print(f"\033[1;32m[跳过]\033[0m 当前表情使用次数{exist_pic['count']}次")
     except Exception as e:
         print(f"\033[1;31m[错误]\033[0m 保存表情包失败: {str(e)}")
         return "not save"
