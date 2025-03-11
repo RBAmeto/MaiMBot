@@ -553,6 +553,8 @@ class Hippocampus:
         Returns:
             list: 识别出的主题列表
         """
+        if text == '[图片]' or text == '[表情包]':
+            return None
         topics_response = await self.llm_topic_judge.generate_response(self.find_topic_llm(text, 5))
         # print(f"话题: {topics_response[0]}")
         topics = [topic.strip() for topic in
@@ -629,7 +631,7 @@ class Hippocampus:
 
     async def memory_activate_value(self, text: str, max_topics: int = 5, similarity_threshold: float = 0.3) -> int:
         """计算输入文本对记忆的激活程度"""
-        logger.info(f"识别主题: {await self._identify_topics(text)}")
+        logger.info(f"识别主题: {text}")
 
         # 识别主题
         identified_topics = await self._identify_topics(text)
