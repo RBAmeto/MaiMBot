@@ -141,6 +141,7 @@ class LLM_request:
 
         api_url = f"{self.base_url.rstrip('/')}/{endpoint.lstrip('/')}"
         # 判断是否为流式
+
         stream_mode = self.params.get("stream", False)
         if self.params.get("stream", False) is True:
             logger.debug(f"进入流式输出模式，发送请求到URL: {api_url}")
@@ -252,7 +253,7 @@ class LLM_request:
                     await asyncio.sleep(wait_time)
                 else:
                     logger.critical(f"请求失败: {str(e)}")
-                    logger.critical(f"请求头: {await self._build_headers(no_key=True)} 请求体: {payload}")
+                    logger.critical(f"请求网址：{api_url}\n请求头: {await self._build_headers(no_key=True)} 请求体: {payload}")
                     raise RuntimeError(f"API请求失败: {str(e)}")
 
         logger.error("达到最大重试次数，请求仍然失败")
