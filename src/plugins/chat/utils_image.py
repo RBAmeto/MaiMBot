@@ -189,20 +189,19 @@ def storage_emoji(image_data: bytes) -> bytes:
                 # print(f"\033[1;33m[提示]\033[0m 发现重复表情包: {filename}")
                 exist_emoji = db.db.emoji.find_one({'filename': filename})
                 if exist_emoji:
-                    return exist_emoji['discription']
-                elif pic_cnt >= 4:
-                    
-                    filesvname = exist_pic['filename']
-                    emoji_path = os.path.join(emoji_dir, filesvname)
-                    
-                    # 直接保存原始文件
-                    with open(emoji_path, "wb") as f:
-                        f.write(image_data)
-                        
-                    print(f"\033[1;32m[成功]\033[0m 保存表情包到: {emoji_path}")
-                    return "saved"
-                else:
-                    print(f"\033[1;32m[跳过]\033[0m 当前表情使用次数{exist_pic['count']}次")
+                    if exist_emoji['discription']:
+                        return exist_emoji['discription']
+        if pic_cnt >= 4:
+            filesvname = exist_pic['filename']
+            emoji_path = os.path.join(emoji_dir, filesvname)
+            # 直接保存原始文件
+            with open(emoji_path, "wb") as f:
+                f.write(image_data)
+            print(f"\033[1;32m[成功]\033[0m 保存表情包到: {emoji_path}")
+            return "saved"
+        else:
+            print(f"\033[1;32m[跳过]\033[0m 当前表情使用次数{exist_pic['count']}次")
+        return "not save"
     except Exception as e:
         print(f"\033[1;31m[错误]\033[0m 保存表情包失败: {str(e)}")
         return "not save"

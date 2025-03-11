@@ -175,7 +175,7 @@ class CQCode:
             elif emoji_sta == 'saved':
                 return '[表情包]'
             else:
-                return emoji_sta
+                return f"[表情包：{emoji_sta}]"
         else:
             return '[图片]'
 
