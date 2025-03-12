@@ -16,11 +16,12 @@ class WillingManager:
     async def _decay_reply_willing(self):
         """定期衰减回复意愿"""
         while True:
-            await asyncio.sleep(5)
+            await asyncio.sleep(10)
             for chat_id in self.chat_reply_willing:
-                self.chat_reply_willing[chat_id] = max(0, self.chat_reply_willing[chat_id] * 0.6)
-            for chat_id in self.chat_reply_willing:
-                self.chat_reply_willing[chat_id] = max(0, self.chat_reply_willing[chat_id] * 0.6)
+                if self.chat_reply_willing[chat_id] > 0.51:
+                    self.chat_reply_willing[chat_id] = max(0, self.chat_reply_willing[chat_id] * 0.6)
+            # for chat_id in self.chat_reply_willing:
+            #     self.chat_reply_willing[chat_id] = max(0, self.chat_reply_willing[chat_id] * 0.6)
                 
     def get_willing(self,chat_stream:ChatStream) -> float:
         """获取指定聊天流的回复意愿"""
@@ -69,7 +70,8 @@ class WillingManager:
         
         current_willing *= global_config.response_willing_amplifier #放大回复意愿
         # print(f"放大系数_willing: {global_config.response_willing_amplifier}, 当前意愿: {current_willing}")
-        
+        if current_willing < 0.5:
+            current_willing += 0.01
         reply_probability = max((current_willing - 0.45) * 2, 0)
         if is_emoji:
             reply_probability *= 0.1
