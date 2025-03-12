@@ -242,21 +242,21 @@ class ImageManager:
             image_format = Image.open(io.BytesIO(image_bytes)).format.lower()
             #区分emoji和image
             filetype = 'image'
-            if 'pic' not in self.db.list_collection_names():
-                    self.db.create_collection('pic')
-                    self.db.pic.create_index([('hash', 1)], unique=True)
-                    self.db.pic.create_index([('count')])
-            exist_pic = self.db.pic.find_one({'hash': image_hash})
+            if 'pic' not in self.db.db.list_collection_names():
+                    self.db.db.create_collection('pic')
+                    self.db.db.pic.create_index([('hash', 1)], unique=True)
+                    self.db.db.pic.create_index([('count')])
+            exist_pic = self.db.db.pic.find_one({'hash': image_hash})
             if not exist_pic:
                 pic_record={
                         'hash':image_hash,
                         'count':1
                     }
-                self.db.pic.insert_one(pic_record)
+                self.db.db.pic.insert_one(pic_record)
             else:
                 logger.info(f"{filename}出现{exist_pic['count']}次了")
                 pic_cnt = exist_pic['count'] + 1
-                self.db.pic.update_one({'hash': image_hash},{ "$set": { 'count': pic_cnt } })
+                self.db.db.pic.update_one({'hash': image_hash},{ "$set": { 'count': pic_cnt } })
                 if pic_cnt >= 5:
                     filetype = 'emoji'
               # 查询缓存的描述

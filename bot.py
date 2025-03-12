@@ -35,15 +35,15 @@ def easter_egg():
     # 彩蛋
     from colorama import init, Fore
 
-init()
-text = "多年以后，面对AI行刑队，张三将会回想起他2023年在会议上讨论人工智能的那个下午"
-rainbow_colors = [Fore.RED, Fore.YELLOW, Fore.GREEN, Fore.CYAN, Fore.BLUE, Fore.MAGENTA]
-rainbow_text = ""
-for i, char in enumerate(text):
-    rainbow_text += rainbow_colors[i % len(rainbow_colors)] + char
-print(rainbow_text)
-'''彩蛋'''
-# 注册适配器
+    init()
+    text = "多年以后，面对AI行刑队，张三将会回想起他2023年在会议上讨论人工智能的那个下午"
+    rainbow_colors = [Fore.RED, Fore.YELLOW, Fore.GREEN, Fore.CYAN, Fore.BLUE, Fore.MAGENTA]
+    rainbow_text = ""
+    for i, char in enumerate(text):
+        rainbow_text += rainbow_colors[i % len(rainbow_colors)] + char
+    print(rainbow_text)
+    '''彩蛋'''
+    # 注册适配器
 
 def init_config():
     # 初次启动检测
@@ -185,20 +185,20 @@ async def graceful_shutdown():
         logger.error(f"麦麦关闭失败: {e}")
 
 
-async def uvicorn_main():
-    global uvicorn_server
-    config = uvicorn.Config(
-        app="__main__:app",
-        host=os.getenv("HOST", "127.0.0.1"),
-        port=int(os.getenv("PORT", 8080)),
-        reload=os.getenv("ENVIRONMENT") == "dev",
-        timeout_graceful_shutdown=5,
-        log_config=None,
-        access_log=False
-    )
-    server = uvicorn.Server(config)
-    uvicorn_server = server
-    await server.serve()
+# async def uvicorn_main():
+#     global uvicorn_server
+#     config = uvicorn.Config(
+#         app="__main__:app",
+#         host=os.getenv("HOST", "127.0.0.1"),
+#         port=int(os.getenv("PORT", 8080)),
+#         reload=os.getenv("ENVIRONMENT") == "dev",
+#         timeout_graceful_shutdown=5,
+#         log_config=None,
+#         access_log=False
+#     )
+#     server = uvicorn.Server(config)
+#     uvicorn_server = server
+#     await server.serve()
 
 
 def raw_main():
@@ -216,7 +216,7 @@ def raw_main():
     load_logger()
 
     env_config = {key: os.getenv(key) for key in os.environ}
-    scan_provider(env_config)
+    # scan_provider(env_config)
 
     # 设置基础配置
     base_config = {
@@ -228,29 +228,30 @@ def raw_main():
     # 合并配置
     nonebot.init(**base_config, **env_config)
 
-driver = nonebot.get_driver()
-driver.register_adapter(ONEBOT_V11Adapter)
-nonebot.load_from_toml("pyproject.toml")
+    driver = nonebot.get_driver()
+    driver.register_adapter(Adapter)
+    nonebot.load_from_toml("pyproject.toml")
 
 # 加载插件
 # nonebot.load_plugins("src/plugins")
 
 if __name__ == "__main__":
 
-    try:
-        raw_main()
+    # try:
+    raw_main()
+    nonebot.run()
 
-        global app
-        app = nonebot.get_asgi()
+        # global app
+        # app = nonebot.get_asgi()
 
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(uvicorn_main())
-    except KeyboardInterrupt:
-        logger.warning("麦麦会努力做的更好的！正在停止中......")
-    except Exception as e:
-        logger.error(f"主程序异常: {e}")
-    finally:
-        loop.run_until_complete(graceful_shutdown())
-        loop.close()
-        logger.info("进程终止完毕，麦麦开始休眠......下次再见哦！")
+        # loop = asyncio.new_event_loop()
+        # asyncio.set_event_loop(loop)
+        # loop.run_until_complete(uvicorn_main())
+    # except KeyboardInterrupt:
+    #     logger.warning("麦麦会努力做的更好的！正在停止中......")
+    # except Exception as e:
+    #     logger.error(f"主程序异常: {e}")
+    # finally:
+    #     loop.run_until_complete(graceful_shutdown())
+    #     loop.close()
+    #     logger.info("进程终止完毕，麦麦开始休眠......下次再见哦！")

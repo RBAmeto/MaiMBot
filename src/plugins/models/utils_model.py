@@ -236,7 +236,7 @@ class LLM_request:
                                                 delta_content = ""
                                             accumulated_content += delta_content
                                             # 检测流式输出文本是否结束
-                                            finish_reason =  chunk["choices"][0]["finish_reason"]
+                                            finish_reason = chunk["choices"][0].get("finish_reason")
                                             if finish_reason == "stop":
                                                 usage = chunk.get("usage", None)
                                                 if usage:
