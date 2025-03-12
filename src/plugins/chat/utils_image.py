@@ -4,7 +4,8 @@ import time
 import aiohttp
 import hashlib
 from typing import Optional, Union
-
+from PIL import Image
+import io
 from loguru import logger
 from nonebot import get_driver
 
@@ -119,7 +120,7 @@ class ImageManager:
                     
             # 计算哈希值
             image_hash = hashlib.md5(image_bytes).hexdigest()
-            
+            image_format = Image.open(io.BytesIO(image_bytes)).format.lower()
             # 查重
             existing = self.db.db.images.find_one({'hash': image_hash})
             if existing:
@@ -127,7 +128,7 @@ class ImageManager:
                 
             # 生成文件名和路径
             timestamp = int(time.time())
-            filename = f"{timestamp}_{image_hash[:8]}.jpg"
+            filename = f"{timestamp}_{image_hash[:8]}.{image_format}"
             file_path = os.path.join(self.IMAGE_DIR, filename)
             
             # 保存文件
@@ -238,6 +239,7 @@ class ImageManager:
             # 计算图片哈希
             image_bytes = base64.b64decode(image_base64)
             image_hash = hashlib.md5(image_bytes).hexdigest()
+            image_format = Image.open(io.BytesIO(image_bytes)).format.lower()
             #区分emoji和image
             filetype = 'image'
             if 'pic' not in self.db.list_collection_names():
@@ -274,7 +276,7 @@ class ImageManager:
             if global_config.EMOJI_SAVE:
                 # 生成文件名和路径
                 timestamp = int(time.time())
-                filename = f"{timestamp}_{image_hash[:8]}.jpg"
+                filename = f"{timestamp}_{image_hash[:8]}.{image_format}"
                 file_path = os.path.join(self.IMAGE_DIR, filetype,filename)
                 try:
                     # 保存文件
