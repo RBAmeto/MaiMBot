@@ -10,7 +10,7 @@ from nonebot import get_driver
 import base64
 from PIL import Image
 import io
-from ...common.database import Database
+from ...common.database import db
 from ..chat.config import global_config
 
 driver = get_driver()
@@ -34,17 +34,16 @@ class LLM_request:
         self.pri_out = model.get("pri_out", 0)
 
         # 获取数据库实例
-        self.db = Database.get_instance()
         self._init_database()
 
     def _init_database(self):
         """初始化数据库集合"""
         try:
             # 创建llm_usage集合的索引
-            self.db.db.llm_usage.create_index([("timestamp", 1)])
-            self.db.db.llm_usage.create_index([("model_name", 1)])
-            self.db.db.llm_usage.create_index([("user_id", 1)])
-            self.db.db.llm_usage.create_index([("request_type", 1)])
+            db.llm_usage.create_index([("timestamp", 1)])
+            db.llm_usage.create_index([("model_name", 1)])
+            db.llm_usage.create_index([("user_id", 1)])
+            db.llm_usage.create_index([("request_type", 1)])
         except Exception:
             logger.error("创建数据库索引失败")
 
@@ -73,7 +72,7 @@ class LLM_request:
                 "status": "success",
                 "timestamp": datetime.now()
             }
-            self.db.db.llm_usage.insert_one(usage_data)
+            db.llm_usage.insert_one(usage_data)
             logger.info(
                 f"Token使用情况 - 模型: {self.model_name}, "
                 f"用户: {user_id}, 类型: {request_type}, "
@@ -104,6 +103,7 @@ class LLM_request:
             endpoint: str,
             prompt: str = None,
             image_base64: str = None,
+            image_format: str = None,
             payload: dict = None,
             retry_policy: dict = None,
             response_handler: callable = None,
@@ -115,6 +115,7 @@ class LLM_request:
             endpoint: API端点路径 (如 "chat/completions")
             prompt: prompt文本
             image_base64: 图片的base64编码
+            image_format: 图片格式
             payload: 请求体数据
             retry_policy: 自定义重试策略
             response_handler: 自定义响应处理器
@@ -131,7 +132,7 @@ class LLM_request:
         # 常见Error Code Mapping
         error_code_mapping = {
             400: "参数不正确",
-            401: "API key 错误，认证失败",
+            401: "API key 错误，认证失败，请检查/config/bot_config.toml和.env.prod中的配置是否正确哦~",
             402: "账号余额不足",
             403: "需要实名,或余额不足",
             404: "Not Found",
@@ -152,7 +153,7 @@ class LLM_request:
 
         # 构建请求体
         if image_base64:
-            payload = await self._build_payload(prompt, image_base64)
+            payload = await self._build_payload(prompt, image_base64, image_format)
         elif payload is None:
             payload = await self._build_payload(prompt)
 
@@ -173,7 +174,7 @@ class LLM_request:
                             if response.status == 413:
                                 logger.warning("请求体过大，尝试压缩...")
                                 image_base64 = compress_base64_image_by_scale(image_base64)
-                                payload = await self._build_payload(prompt, image_base64)
+                                payload = await self._build_payload(prompt, image_base64, image_format)
                             elif response.status in [500, 503]:
                                 logger.error(f"错误码: {response.status} - {error_code_mapping.get(response.status)}")
                                 raise RuntimeError("服务器负载过高，模型恢复失败QAQ")
@@ -295,7 +296,7 @@ class LLM_request:
                 new_params["max_completion_tokens"] = new_params.pop("max_tokens")
         return new_params
 
-    async def _build_payload(self, prompt: str, image_base64: str = None) -> dict:
+    async def _build_payload(self, prompt: str, image_base64: str = None, image_format: str = "jpeg") -> dict:
         """构建请求体"""
         # 复制一份参数，避免直接修改 self.params
         params_copy = await self._transform_parameters(self.params)
@@ -303,19 +304,6 @@ class LLM_request:
             # 解码base64数据以检测图像格式
             try:
                 image_data = base64.b64decode(image_base64)
-                with Image.open(io.BytesIO(image_data)) as img:
-                    img_format = img.format
-                    if img_format == 'JPEG':
-                        mime_type = 'image/jpeg'
-                    elif img_format == 'PNG':
-                        mime_type = 'image/png'
-                    elif img_format == 'GIF':
-                        mime_type = 'image/gif'
-                    else:
-                        mime_type = 'image/png'  # 默认类型
-            except Exception as e:
-                logger.warning(f"图像格式检测失败，使用默认MIME类型: {e}")
-                mime_type = 'image/jpeg'
             payload = {
                 "model": self.model_name,
                 "messages": [
@@ -323,7 +311,7 @@ class LLM_request:
                         "role": "user",
                         "content": [
                             {"type": "text", "text": prompt},
-                            {"type": "image_url", "image_url": {"url": f"data:{mime_type};base64,{image_base64}"}}
+                            {"type": "image_url", "image_url": {"url": f"data:image/{image_format.lower()};base64,{image_base64}"}}
                         ]
                     }
                 ],
@@ -408,13 +396,14 @@ class LLM_request:
         )
         return content, reasoning_content
 
-    async def generate_response_for_image(self, prompt: str, image_base64: str) -> Tuple[str, str]:
+    async def generate_response_for_image(self, prompt: str, image_base64: str, image_format: str) -> Tuple[str, str]:
         """根据输入的提示和图片生成模型的异步响应"""
 
         content, reasoning_content = await self._execute_request(
             endpoint="/chat/completions",
             prompt=prompt,
-            image_base64=image_base64
+            image_base64=image_base64,
+            image_format=image_format
         )
         return content, reasoning_content
 

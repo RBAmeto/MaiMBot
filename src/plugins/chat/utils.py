@@ -16,6 +16,7 @@ from .message import MessageRecv,Message
 from .message_base import UserInfo
 from .chat_stream import ChatStream
 from ..moods.moods import MoodManager
+from ...common.database import db
 
 driver = get_driver()
 config = driver.config
@@ -76,11 +77,10 @@ def calculate_information_content(text):
     return entropy
 
 
-def get_cloest_chat_from_db(db, length: int, timestamp: str):
+def get_closest_chat_from_db(length: int, timestamp: str):
     """从数据库中获取最接近指定时间戳的聊天记录
     
     Args:
-        db: 数据库实例
         length: 要获取的消息数量
         timestamp: 时间戳
         
@@ -88,13 +88,13 @@ def get_cloest_chat_from_db(db, length: int, timestamp: str):
         list: 消息记录列表，每个记录包含时间和文本信息
     """
     chat_records = []
-    closest_record = db.db.messages.find_one({"time": {"$lte": timestamp}}, sort=[('time', -1)])
+    closest_record = db.messages.find_one({"time": {"$lte": timestamp}}, sort=[('time', -1)])
     
     if closest_record:            
         closest_time = closest_record['time']
         chat_id = closest_record['chat_id']  # 获取chat_id
         # 获取该时间戳之后的length条消息，保持相同的chat_id
-        chat_records = list(db.db.messages.find(
+        chat_records = list(db.messages.find(
             {
                 "time": {"$gt": closest_time},
                 "chat_id": chat_id  # 添加chat_id过滤
@@ -125,11 +125,10 @@ def get_cloest_chat_from_db(db, length: int, timestamp: str):
     return []
 
 
-async def get_recent_group_messages(db, chat_id:str, limit: int = 12) -> list:
+async def get_recent_group_messages(chat_id:str, limit: int = 12) -> list:
     """从数据库获取群组最近的消息记录
     
     Args:
-        db: Database实例
         group_id: 群组ID
         limit: 获取消息数量，默认12条
         
@@ -138,7 +137,7 @@ async def get_recent_group_messages(db, chat_id:str, limit: int = 12) -> list:
     """
 
     # 从数据库获取最近消息
-    recent_messages = list(db.db.messages.find(
+    recent_messages = list(db.messages.find(
         {"chat_id": chat_id},
     ).sort("time", -1).limit(limit))
 
@@ -171,8 +170,8 @@ async def get_recent_group_messages(db, chat_id:str, limit: int = 12) -> list:
     return message_objects
 
 
-def get_recent_group_detailed_plain_text(db, chat_stream_id: int, limit: int = 12, combine=False):
-    recent_messages = list(db.db.messages.find(
+def get_recent_group_detailed_plain_text(chat_stream_id: int, limit: int = 12, combine=False):
+    recent_messages = list(db.messages.find(
         {"chat_id": chat_stream_id},
         {
             "time": 1,  # 返回时间字段
