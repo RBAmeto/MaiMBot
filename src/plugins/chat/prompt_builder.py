@@ -97,14 +97,14 @@ class PromptBuilder:
             if chat_stream and chat_stream.group_info:
                 stream_group_id = str(chat_stream.group_info.group_id)
 
-        # 调用 hippocampus 的 get_relevant_memories 方法，添加群聊ID参数
+        # 调用 hippocampus 的 get_relevant_memories 方法
         relevant_memories = await hippocampus.get_relevant_memories(
             text=message_txt,
             max_topics=5,
             similarity_threshold=0.4,
-            max_memory_num=5,
-            group_id=stream_group_id
+            max_memory_num=5
         )
+
 
         if relevant_memories:
             # 格式化记忆内容
