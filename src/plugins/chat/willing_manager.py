@@ -18,7 +18,7 @@ class WillingManager:
         while True:
             await asyncio.sleep(10)
             for chat_id in self.chat_reply_willing:
-                if self.chat_reply_willing[chat_id] > 0.3:
+                if self.chat_reply_willing[chat_id] > 0.5:
                     self.chat_reply_willing[chat_id] = max(0, self.chat_reply_willing[chat_id] * 0.6)
             # for chat_id in self.chat_reply_willing:
             #     self.chat_reply_willing[chat_id] = max(0, self.chat_reply_willing[chat_id] * 0.6)
@@ -70,16 +70,18 @@ class WillingManager:
         
         current_willing *= global_config.response_willing_amplifier #放大回复意愿
         # print(f"放大系数_willing: {global_config.response_willing_amplifier}, 当前意愿: {current_willing}")
-        if current_willing < 0.5:
-            current_willing += 0.01
+ 
         reply_probability = max((current_willing - 0.45) * 2, 0)
-        if is_emoji:
-            reply_probability *= 0.1
-            # print(f"表情包, 当前意愿: {current_willing}")
-        # 检查群组权限（如果是群聊）
+        # if is_emoji:
+        #     reply_probability *= 0.1
+        #     # print(f"表情包, 当前意愿: {current_willing}")
+        # # 检查群组权限（如果是群聊）
         if chat_stream.group_info:                
             if chat_stream.group_info.group_id in config.talk_frequency_down_groups:
                 reply_probability = reply_probability / global_config.down_frequency_rate
+            elif current_willing < 0.5:
+                current_willing += 0.01
+
 
         reply_probability = min(reply_probability, 1)
         if reply_probability < 0:

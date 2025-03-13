@@ -330,15 +330,16 @@ class MessageSending(MessageProcessBase):
         self.is_head = is_head
         self.is_emoji = is_emoji
 
-    def set_reply(self, reply: Optional["MessageRecv"]) -> None:
+    def set_reply(self, reply: Optional["MessageRecv"] = None) -> None:
         """设置回复消息"""
         if reply:
             self.reply = reply
+        if self.reply:
             self.reply_to_message_id = self.reply.message_info.message_id
             self.message_segment = Seg(
                 type="seglist",
                 data=[
-                    Seg(type="reply", data=reply.message_info.message_id),
+                    Seg(type="reply", data=self.reply.message_info.message_id),
                     self.message_segment,
                 ],
             )

@@ -29,10 +29,13 @@ class Message_Sender:
         message: MessageSending,
     ) -> None:
         """发送消息"""
+        # print(f"send_message:message:{message}")
 
         if isinstance(message, MessageSending):
             message_json = message.to_dict()
+            # print(f"send_message:message_json:{message_json}")
             message_send = MessageSendCQ(data=message_json)
+            # print(f"send_message:message_send:{message_send}")
             # logger.debug(message_send.message_info,message_send.raw_message)
             if (
                 message_send.message_info.group_info
@@ -178,9 +181,11 @@ class MessageManager:
                 #     and message_earliest.update_thinking_time() > 30
                 #     and not message_earliest.is_private_message()  # 避免在私聊时插入reply
                 # ):
-                #     await message_sender.send_message(message_earliest.set_reply())
+                # await message_sender.send_message(message_earliest.set_reply())
                 # else:
+                message_earliest.set_reply()
                 await message_sender.send_message(message_earliest)
+                # print(f"reply_message_earliest:{message_earliest}")
                 await message_earliest.process()
 
                 print(
@@ -206,12 +211,14 @@ class MessageManager:
                         #     and msg.update_thinking_time() > 30
                         #     and not message_earliest.is_private_message()  # 避免在私聊时插入reply
                         # ):
-                        #     await message_sender.send_message(msg.set_reply())
+                        # await message_sender.send_message(msg.set_reply())
                         # else:
+                        msg.set_reply()
                         await message_sender.send_message(msg)
 
                         # if msg.is_emoji:
                         #     msg.processed_plain_text = "[表情包]"
+                        # print(f"reply_msg:{msg}")
                         await msg.process()
                         await self.storage.store_message(msg, msg.chat_stream, None)
 

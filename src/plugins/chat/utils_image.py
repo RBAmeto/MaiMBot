@@ -55,8 +55,6 @@ class ImageManager:
             # 创建索引
             self.db.db.image_descriptions.create_index([('hash', 1)], unique=True)
             self.db.db.image_descriptions.create_index([('type', 1)])
-                # 删除旧索引
-
 
     def _get_description_from_db(self, image_hash: str, description_type: str) -> Optional[str]:
         """从数据库获取图片描述
