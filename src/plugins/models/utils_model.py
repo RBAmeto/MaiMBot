@@ -302,8 +302,6 @@ class LLM_request:
         params_copy = await self._transform_parameters(self.params)
         if image_base64:
             # 解码base64数据以检测图像格式
-            try:
-                image_data = base64.b64decode(image_base64)
             payload = {
                 "model": self.model_name,
                 "messages": [
