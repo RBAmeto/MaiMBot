@@ -105,7 +105,6 @@ def get_closest_chat_from_db(length: int, timestamp: str):
         formatted_records = []
         for record in chat_records:
             formatted_record = {
-                'message_id': record['_id'],
                 'time': record["time"],
                 'chat_id': record["chat_id"],
                 'detailed_plain_text': record.get("detailed_plain_text", "")  # 添加文本内容
