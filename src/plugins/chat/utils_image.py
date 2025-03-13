@@ -80,6 +80,10 @@ class ImageManager:
             description: 描述文本
             description_type: 描述类型 ('emoji' 或 'image')
         """
+        cached_description = self._get_description_from_db(image_hash, description_type)
+        if cached_description:
+            logger.info(f"{image_hash}已存在缓存描述")
+            return
         self.db.db.image_descriptions.update_one(
             {'hash': image_hash, 'type': description_type},
             {
@@ -254,7 +258,7 @@ class ImageManager:
                     }
                 self.db.db.pic.insert_one(pic_record)
             else:
-                logger.info(f"{filename}出现{exist_pic['count']}次了")
+                logger.info(f"{image_hash}出现{exist_pic['count']}次了")
                 pic_cnt = exist_pic['count'] + 1
                 self.db.db.pic.update_one({'hash': image_hash},{ "$set": { 'count': pic_cnt } })
                 if pic_cnt >= 5:
@@ -277,12 +281,16 @@ class ImageManager:
                 # 生成文件名和路径
                 timestamp = int(time.time())
                 filename = f"{timestamp}_{image_hash[:8]}.{image_format}"
+                file_dir = os.path.join(self.IMAGE_DIR, filetype)
+                for file in os.listdir(file_dir):
+                    if image_hash[:8] in file:
+                        print(f"\033[1;33m[提示]\033[0m 发现重复表情包: {file}")
+                        return f"[图片：{description}]"
                 file_path = os.path.join(self.IMAGE_DIR, filetype,filename)
                 try:
                     # 保存文件
                     with open(file_path, "wb") as f:
                         f.write(image_bytes)
-
                     # 保存到数据库
                     image_doc = {
                         'hash': image_hash,
