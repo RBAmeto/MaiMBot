@@ -173,14 +173,14 @@ class MessageManager:
                     container.remove_message(message_earliest)
             else:
 
-                if (
-                    message_earliest.is_head
-                    # and message_earliest.update_thinking_time() > 30
-                    and not message_earliest.is_private_message()  # 避免在私聊时插入reply
-                ):
-                    await message_sender.send_message(message_earliest.set_reply())
-                else:
-                    await message_sender.send_message(message_earliest)
+                # if (
+                #     message_earliest.is_head
+                #     and message_earliest.update_thinking_time() > 30
+                #     and not message_earliest.is_private_message()  # 避免在私聊时插入reply
+                # ):
+                #     await message_sender.send_message(message_earliest.set_reply())
+                # else:
+                await message_sender.send_message(message_earliest)
                 await message_earliest.process()
 
                 print(
@@ -201,14 +201,14 @@ class MessageManager:
                         continue
 
                     try:
-                        if (
-                            msg.is_head
-                            # and msg.update_thinking_time() > 30
-                            and not message_earliest.is_private_message()  # 避免在私聊时插入reply
-                        ):
-                            await message_sender.send_message(msg.set_reply())
-                        else:
-                            await message_sender.send_message(msg)
+                        # if (
+                        #     msg.is_head
+                        #     and msg.update_thinking_time() > 30
+                        #     and not message_earliest.is_private_message()  # 避免在私聊时插入reply
+                        # ):
+                        #     await message_sender.send_message(msg.set_reply())
+                        # else:
+                        await message_sender.send_message(msg)
 
                         # if msg.is_emoji:
                         #     msg.processed_plain_text = "[表情包]"

@@ -18,7 +18,7 @@ class WillingManager:
         while True:
             await asyncio.sleep(10)
             for chat_id in self.chat_reply_willing:
-                if self.chat_reply_willing[chat_id] > 0.51:
+                if self.chat_reply_willing[chat_id] > 0.3:
                     self.chat_reply_willing[chat_id] = max(0, self.chat_reply_willing[chat_id] * 0.6)
             # for chat_id in self.chat_reply_willing:
             #     self.chat_reply_willing[chat_id] = max(0, self.chat_reply_willing[chat_id] * 0.6)
