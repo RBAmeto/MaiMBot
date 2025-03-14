@@ -44,7 +44,7 @@ chat_bot = ChatBot()
 # 注册消息处理器
 msg_in = on_message(priority=999)
 # 注册和bot相关的通知处理器
-notice_matcher = on_notice(priority=998)
+# notice_matcher = on_notice(priority=998)
 # 创建定时任务
 scheduler = require("nonebot_plugin_apscheduler").scheduler
 
@@ -101,10 +101,10 @@ async def _(bot: Bot, event: MessageEvent, state: T_State):
     await chat_bot.handle_message(event, bot)
 
 
-@notice_matcher.handle()
-async def _(bot: Bot, event: NoticeEvent, state: T_State):
-    logger.debug(f"收到通知：{event}")
-    await chat_bot.handle_notice(event, bot)
+# @notice_matcher.handle()
+# async def _(bot: Bot, event: NoticeEvent, state: T_State):
+#     logger.debug(f"收到通知：{event}")
+#     await chat_bot.handle_notice(event, bot)
 
 
 # 添加build_memory定时任务

@@ -16,7 +16,7 @@ def setup_logger(log_type: LogModule = LogModule.BASE):
     """
     # 移除默认的处理器
     logger.remove()
-    
+    log_level = "SUCCESS"
     # 基础日志格式
     base_format = "<green>{time:HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - <level>{message}</level>"
     
@@ -32,13 +32,14 @@ def setup_logger(log_type: LogModule = LogModule.BASE):
         logger.add(
             sys.stderr,
             format=chat_format,
-            # level="INFO"
+            level=log_level
         )
     elif log_type == LogModule.MEMORY:
         # 同时输出到控制台和文件
         logger.add(
             sys.stderr,
             format=memory_format,
+            level=log_level
             # level="INFO"
         )
         logger.add(
@@ -52,6 +53,7 @@ def setup_logger(log_type: LogModule = LogModule.BASE):
         logger.add(
             sys.stderr,
             format=emoji_format,
+            level=log_level
             # level="INFO"
         )
         logger.add(
@@ -65,7 +67,7 @@ def setup_logger(log_type: LogModule = LogModule.BASE):
         logger.add(
             sys.stderr,
             format=base_format,
-            level="INFO"
+            level=log_level
         )
     
     return logger

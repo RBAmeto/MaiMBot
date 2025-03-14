@@ -161,6 +161,7 @@ class ChatBot:
 
         await message.process()
         # 过滤词
+        
         for word in global_config.ban_words:
             if word in message.processed_plain_text:
                 logger.info(
@@ -201,8 +202,8 @@ class ChatBot:
         )
         current_willing = willing_manager.get_willing(chat_stream=chat)
 
-        logger.info(
-            f"[{current_time}][{chat.group_info.group_name if chat.group_info else '私聊'}]{chat.user_info.user_nickname}:"
+        logger.success(
+            f"[{current_time}][{chat.group_info.group_name if chat.group_info else '私聊'}]{chat.user_info.user_nickname}:\n"
             f"{message.processed_plain_text}[回复意愿:{current_willing:.2f}][概率:{reply_probability * 100:.1f}%]"
         )
 
@@ -228,9 +229,9 @@ class ChatBot:
             willing_manager.change_reply_willing_sent(chat)
 
             response, raw_content = await self.gpt.generate_response(message)
-        else:
-            # 决定不回复时，也更新回复意愿
-            willing_manager.change_reply_willing_not_sent(chat)
+        # else:
+        #     # 决定不回复时，也更新回复意愿
+        #     willing_manager.change_reply_willing_not_sent(chat)
 
         # print(f"response: {response}")
         if response:

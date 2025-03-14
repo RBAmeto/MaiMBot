@@ -301,7 +301,23 @@ class LLM_request:
         # 复制一份参数，避免直接修改 self.params
         params_copy = await self._transform_parameters(self.params)
         if image_base64:
-            # 解码base64数据以检测图像格式
+            try:
+                image_data = base64.b64decode(image_base64)
+                with Image.open(io.BytesIO(image_data)) as img:
+                    img_format = img.format
+                    if img_format == 'JPEG':
+                        mime_type = 'jpeg'
+                    elif img_format == 'PNG':
+                        mime_type = 'png'
+                    elif img_format == 'GIF':
+                        mime_type = 'gif'
+                    else:
+                        mime_type = 'png'  # 默认类型
+            except Exception as e:
+                logger.warning(f"图像格式检测失败，使用默认MIME类型: {e}")
+                mime_type = 'jpeg'
+            if not mime_type == image_format.lower():
+                image_format = mime_type
             payload = {
                 "model": self.model_name,
                 "messages": [

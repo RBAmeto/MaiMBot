@@ -183,7 +183,8 @@ class MessageManager:
                 # ):
                 # await message_sender.send_message(message_earliest.set_reply())
                 # else:
-                message_earliest.set_reply()
+                if not message_earliest.is_emoji:
+                    message_earliest.set_reply()
                 await message_sender.send_message(message_earliest)
                 # print(f"reply_message_earliest:{message_earliest}")
                 await message_earliest.process()
@@ -213,7 +214,8 @@ class MessageManager:
                         # ):
                         # await message_sender.send_message(msg.set_reply())
                         # else:
-                        msg.set_reply()
+                        if not msg.is_emoji:
+                            msg.set_reply()
                         await message_sender.send_message(msg)
 
                         # if msg.is_emoji:
