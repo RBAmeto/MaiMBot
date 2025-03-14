@@ -1,6 +1,6 @@
-import os
 import datetime
 import json
+import re
 from typing import Dict, Union
 
 from loguru import logger
@@ -65,7 +65,9 @@ class ScheduleGenerator:
             1. 早上的学习和工作安排
             2. 下午的活动和任务
             3. 晚上的计划和休息时间
-            请按照时间顺序列出具体时间点和对应的活动，用一个时间点而不是时间段来表示时间，用JSON格式返回日程表，仅返回内容，不要返回注释，不要添加任何markdown或代码块样式，时间采用24小时制，格式为{"时间": "活动","时间": "活动",...}。"""
+            请按照时间顺序列出具体时间点和对应的活动，用一个时间点而不是时间段来表示时间，用JSON格式返回日程表，
+            仅返回内容，不要返回注释，不要添加任何markdown或代码块样式，时间采用24小时制，
+            格式为{"时间": "活动","时间": "活动",...}。"""
             )
 
             try:
@@ -89,7 +91,9 @@ class ScheduleGenerator:
     def _parse_schedule(self, schedule_text: str) -> Union[bool, Dict[str, str]]:
         """解析日程文本，转换为时间和活动的字典"""
         try:
-            schedule_dict = json.loads(schedule_text)
+            reg = r"\{(.|\r|\n)+\}"
+            matched = re.search(reg, schedule_text)[0]
+            schedule_dict = json.loads(matched)
             return schedule_dict
         except json.JSONDecodeError:
             logger.exception("解析日程失败: {}".format(schedule_text))

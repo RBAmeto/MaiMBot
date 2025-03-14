@@ -15,12 +15,12 @@ from .bot import chat_bot
 from .config import global_config
 from .emoji_manager import emoji_manager
 from .relationship_manager import relationship_manager
-from .willing_manager import willing_manager
+from ..willing.willing_manager import willing_manager
 from .chat_stream import chat_manager
 from ..memory_system.memory import hippocampus, memory_graph
 from .bot import ChatBot
 from .message_sender import message_manager, message_sender
-
+from .storage import MessageStorage
 
 # 创建LLM统计实例
 llm_stats = LLMStatistics("llm_statistics.txt")
@@ -151,3 +151,13 @@ async def generate_schedule_task():
     await bot_schedule.initialize()
     if not bot_schedule.enable_output:
         bot_schedule.print_schedule()
+
+@scheduler.scheduled_job("interval", seconds=3600, id="remove_recalled_message")
+
+async def remove_recalled_message() -> None:
+    """删除撤回消息"""
+    try:
+        storage = MessageStorage()
+        await storage.remove_recalled_message(time.time())
+    except Exception:
+        logger.exception("删除撤回消息失败")

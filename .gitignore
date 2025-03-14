@@ -16,6 +16,7 @@ memory_graph.gml
 .env.*
 config/bot_config_dev.toml
 config/bot_config.toml
+src/plugins/remote/client_uuid.json
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

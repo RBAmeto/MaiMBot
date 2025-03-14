@@ -27,6 +27,7 @@ class Message(MessageBase):
     reply: Optional["Message"] = None
     detailed_plain_text: str = ""
     processed_plain_text: str = ""
+    memorized_times: int = 0
 
     def __init__(
         self,
@@ -159,7 +160,7 @@ class MessageRecv(Message):
         user_info = self.message_info.user_info
         name = (
             f"{user_info.user_nickname}(ta的昵称:{user_info.user_cardname},ta的id:{user_info.user_id})"
-            if user_info.user_cardname != ""
+            if user_info.user_cardname != None
             else f"{user_info.user_nickname}(ta的id:{user_info.user_id})"
         )
         return f"[{time_str}] {name}: {self.processed_plain_text}\n"
@@ -255,7 +256,7 @@ class MessageProcessBase(Message):
         user_info = self.message_info.user_info
         name = (
             f"{user_info.user_nickname}(ta的昵称:{user_info.user_cardname},ta的id:{user_info.user_id})"
-            if user_info.user_cardname != ""
+            if user_info.user_cardname != None
             else f"{user_info.user_nickname}(ta的id:{user_info.user_id})"
         )
         return f"[{time_str}] {name}: {self.processed_plain_text}\n"
@@ -328,6 +329,7 @@ class MessageSending(MessageProcessBase):
                     self.message_segment,
                 ],
             )
+        return self
 
     async def process(self) -> None:
         """处理消息内容，生成纯文本和详细文本"""

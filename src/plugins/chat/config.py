@@ -73,6 +73,8 @@ class BotConfig:
     mood_update_interval: float = 1.0  # 情绪更新间隔 单位秒
     mood_decay_rate: float = 0.95  # 情绪衰减率
     mood_intensity_factor: float = 0.7  # 情绪强度因子
+    
+    willing_mode: str = "classical"  # 意愿模式
 
     keywords_reaction_rules = []  # 关键词回复规则
 
@@ -217,6 +219,10 @@ class BotConfig:
                 "model_r1_distill_probability", config.MODEL_R1_DISTILL_PROBABILITY
             )
             config.max_response_length = response_config.get("max_response_length", config.max_response_length)
+            
+        def willing(parent: dict):
+            willing_config = parent["willing"]
+            config.willing_mode = willing_config.get("willing_mode", config.willing_mode)
 
         def model(parent: dict):
             # 加载模型配置
@@ -363,6 +369,7 @@ class BotConfig:
             "cq_code": {"func": cq_code, "support": ">=0.0.0"},
             "bot": {"func": bot, "support": ">=0.0.0"},
             "response": {"func": response, "support": ">=0.0.0"},
+            "willing": {"func": willing, "support": ">=0.0.9", "necessary": False},
             "model": {"func": model, "support": ">=0.0.0"},
             "message": {"func": message, "support": ">=0.0.0"},
             "memory": {"func": memory, "support": ">=0.0.0", "necessary": False},

@@ -17,7 +17,7 @@
 - MongoDB 提供数据持久化支持
 - NapCat 作为QQ协议端支持
 
-**最新版本: v0.5.13**
+**最新版本: v0.5.14** ([查看更新日志](changelog.md))
 > [!WARNING]
 > 注意，3月12日的v0.5.13, 该版本更新较大，建议单独开文件夹部署，然后转移/data文件 和数据库，数据库可能需要删除messages下的内容（不需要删除记忆）
 
@@ -53,6 +53,12 @@
 **😊 其他平台版本** 
 
 - (由 [CabLate](https://github.com/cablate) 贡献) [Telegram 与其他平台(未来可能会有)的版本](https://github.com/cablate/MaiMBot/tree/telegram) - [集中讨论串](https://github.com/SengokuCola/MaiMBot/discussions/149)
+
+
+
+## 📝 注意注意注意注意注意注意注意注意注意注意注意注意注意注意注意注意注意
+**如果你有想法想要提交pr** 
+- 由于本项目在快速迭代和功能调整，并且有重构计划，目前不接受任何未经过核心开发组讨论的pr合并，谢谢！如您仍旧希望提交pr，可以详情请看置顶issue
 
 <div align="left">
 <h2>📚 文档        ⬇️ 快速开始使用麦麦 ⬇️</h2>

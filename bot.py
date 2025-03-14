@@ -10,9 +10,8 @@ import uvicorn
 from dotenv import load_dotenv
 from nonebot.adapters.onebot.v11 import Adapter
 import platform
-from src.plugins.utils.logger_config import setup_logger
+from src.plugins.utils.logger_config import LogModule, LogClassification
 
-from loguru import logger
 
 # 配置日志格式
 
@@ -103,7 +102,9 @@ def load_env():
 
 
 def load_logger():
-    setup_logger()
+    global logger # 使得bot.py中其他函数也能调用
+    log_module = LogModule()
+    logger = log_module.setup_logger(LogClassification.BASE)
 
 
 def scan_provider(env_config: dict):

@@ -18,15 +18,15 @@ from ..chat.utils import get_embedding
 from ..chat.utils_image import ImageManager, image_path_to_base64
 from ..models.utils_model import LLM_request
 
-from ..utils.logger_config import setup_logger, LogModule
+from ..utils.logger_config import LogClassification, LogModule
 
 # 配置日志
-logger = setup_logger(LogModule.EMOJI)
+log_module = LogModule()
+logger = log_module.setup_logger(LogClassification.EMOJI)
 
 driver = get_driver()
 config = driver.config
 image_manager = ImageManager()
-
 
 
 class EmojiManager:
@@ -43,7 +43,7 @@ class EmojiManager:
         self._scan_task = None
         self.vlm = LLM_request(model=global_config.vlm, temperature=0.3, max_tokens=1000)
         self.llm_emotion_judge = LLM_request(
-            model=global_config.llm_emotion_judge, max_tokens=60, temperature=0.8
+            model=global_config.llm_emotion_judge, max_tokens=600, temperature=0.8
         )  # 更高的温度，更少的token（后续可以根据情绪来调整温度）
 
     def _ensure_emoji_dir(self):
@@ -281,7 +281,6 @@ class EmojiManager:
 
                 if description is not None:
                     embedding = await get_embedding(description)
-
                     # 准备数据库记录
                     emoji_record = {
                         "filename": filename,

@@ -57,16 +57,20 @@ class MessageRecvCQ(MessageCQ):
         # 私聊消息不携带group_info
         if group_info is None:
             pass
-
         elif group_info.group_name is None:
             group_info.group_name = get_groupname(group_info.group_id)
 
         # 解析消息段
-        self.message_segment = self._parse_message(raw_message, reply_message)
+        self.message_segment = None  # 初始化为None
         self.raw_message = raw_message
+        # 异步初始化在外部完成
 
-    def _parse_message(self, message: str, reply_message: Optional[Dict] = None) -> Seg:
-        """解析消息内容为Seg对象"""
+    async def initialize(self):
+        """异步初始化方法"""
+        self.message_segment = await self._parse_message(self.raw_message)
+
+    async def _parse_message(self, message: str, reply_message: Optional[Dict] = None) -> Seg:
+        """异步解析消息内容为Seg对象"""
         cq_code_dict_list = []
         segments = []
 
@@ -98,9 +102,10 @@ class MessageRecvCQ(MessageCQ):
 
         # 转换CQ码为Seg对象
         for code_item in cq_code_dict_list:
-            message_obj = cq_code_tool.cq_from_dict_to_class(code_item, msg=self, reply=reply_message)
-            if message_obj.translated_segments:
-                segments.append(message_obj.translated_segments)
+            cq_code_obj = cq_code_tool.cq_from_dict_to_class(code_item, msg=self, reply=reply_message)
+            await cq_code_obj.translate()  # 异步调用translate
+            if cq_code_obj.translated_segments:
+                segments.append(cq_code_obj.translated_segments)
 
         # 如果只有一个segment，直接返回
         if len(segments) == 1:
@@ -133,9 +138,7 @@ class MessageSendCQ(MessageCQ):
         self.message_segment = message_segment
         self.raw_message = self._generate_raw_message()
 
-    def _generate_raw_message(
-        self,
-    ) -> str:
+    def _generate_raw_message(self) -> str:
         """将Seg对象转换为raw_message"""
         segments = []
 

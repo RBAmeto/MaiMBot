@@ -8,6 +8,8 @@ from nonebot.adapters.onebot.v11 import (
     PrivateMessageEvent,
     NoticeEvent,
     PokeNotifyEvent,
+    GroupRecallNoticeEvent,
+    FriendRecallNoticeEvent,
 )
 
 from ..memory_system.memory import hippocampus
@@ -27,12 +29,13 @@ from .storage import MessageStorage
 from .utils import calculate_typing_time, is_mentioned_bot_in_message
 from .utils_image import image_path_to_base64
 from .utils_user import get_user_nickname, get_user_cardname, get_groupname
-from .willing_manager import willing_manager  # 导入意愿管理器
+from ..willing.willing_manager import willing_manager  # 导入意愿管理器
 from .message_base import UserInfo, GroupInfo, Seg
-from ..utils.logger_config import setup_logger, LogModule
+from ..utils.logger_config import LogClassification, LogModule
 
 # 配置日志
-logger = setup_logger(LogModule.CHAT)
+log_module = LogModule()
+logger = log_module.setup_logger(LogClassification.CHAT)
 
 
 class ChatBot:
@@ -76,6 +79,22 @@ class ChatBot:
                 raw_message += "（这是一个类似摸摸头的友善行为，而不是恶意行为，请不要作出攻击发言）"
                 await self.directly_reply(raw_message, event.user_id, event.group_id)
 
+        if isinstance(event, GroupRecallNoticeEvent) or isinstance(event, FriendRecallNoticeEvent):
+            user_info = UserInfo(
+                user_id=event.user_id,
+                user_nickname=get_user_nickname(event.user_id) or None,
+                user_cardname=get_user_cardname(event.user_id) or None,
+                platform="qq",
+            )
+
+            group_info = GroupInfo(group_id=event.group_id, group_name=None, platform="qq")
+
+            chat = await chat_manager.get_or_create_stream(
+                platform=user_info.platform, user_info=user_info, group_info=group_info
+            )
+
+            await self.storage.store_recalled_message(event.message_id, time.time(), chat)
+
     async def handle_message(self, event: MessageEvent, bot: Bot) -> None:
         """处理收到的消息"""
 
@@ -94,6 +113,8 @@ class ChatBot:
             logger.debug(f"跳过处理回复来自被ban用户 {event.reply.sender.user_id} 的消息")
             return
         # 处理私聊消息
+        
+        
         if isinstance(event, PrivateMessageEvent):
             if not global_config.enable_friend_chat:  # 私聊过滤
                 return
@@ -140,7 +161,9 @@ class ChatBot:
             reply_message=event.reply,
             platform="qq",
         )
+        await message_cq.initialize()
         message_json = message_cq.to_dict()
+        # 哦我嘞个json
 
         # 进入maimbot
         message = MessageRecv(message_json)
@@ -150,8 +173,9 @@ class ChatBot:
 
         # 消息过滤，涉及到config有待更新
 
+        # 创建聊天流
         chat = await chat_manager.get_or_create_stream(
-            platform=messageinfo.platform, user_info=userinfo, group_info=groupinfo
+            platform=messageinfo.platform, user_info=userinfo, group_info=groupinfo #我嘞个gourp_info
         )
         message.update_chat_stream(chat)
         await relationship_manager.update_relationship(
@@ -160,6 +184,7 @@ class ChatBot:
         await relationship_manager.update_relationship_value(chat_stream=chat, relationship_value=0.5)
 
         await message.process()
+        
         # 过滤词
         
         for word in global_config.ban_words:
@@ -181,8 +206,7 @@ class ChatBot:
 
         current_time = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(messageinfo.time))
 
-        # topic=await topic_identifier.identify_topic_llm(message.processed_plain_text)
-
+        #根据话题计算激活度
         topic = ""
         interested_rate = await hippocampus.memory_activate_value(message.processed_plain_text) / 100
         logger.debug(f"对{message.processed_plain_text}的激活度:{interested_rate}")
@@ -363,6 +387,7 @@ class ChatBot:
             reply_message=None,
             platform="qq",
         )
+        await message_cq.initialize()
         message_json = message_cq.to_dict()
 
         message = MessageRecv(message_json)
